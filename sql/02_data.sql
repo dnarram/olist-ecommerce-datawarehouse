@@ -18,7 +18,7 @@ SET search_path TO ecommerce_dw;
 /*==============================================================================
   PASO 0 · CARGA DE STAGING DESDE CSV
   ------------------------------------------------------------------------------
-  Dos formas de cargar:
+  Dos formas de cargar (elige una):
 
   (A) Por código con psql  ->  descomenta el bloque \copy y ajusta la ruta.
       \copy es la opción REPRODUCIBLE recomendada para la corrección.
@@ -185,6 +185,21 @@ SELECT
          THEN TRUE ELSE FALSE END             AS is_weekend
 FROM date_series
 ORDER BY full_date;
+
+-- ----------------------------------------------------------------------------
+-- PASO 2.6 · ESTADÍSTICAS DE LAS DIMENSIONES
+-- Las dimensiones se acaban de cargar en ESTA misma transacción, así que el
+-- planificador aún las cree (casi) vacías y, al cargar la fact, elegiría un
+-- Nested Loop con Seq Scan (lentísimo: recorre cada dimensión por cada una de
+-- las 112.650 filas). ANALYZE actualiza las estadísticas para que el optimizador
+-- use Hash Join y la carga de la fact baje de minutos/colgada a segundos.
+-- (ANALYZE, a diferencia de VACUUM, sí puede ejecutarse dentro de una transacción.)
+-- ----------------------------------------------------------------------------
+ANALYZE ecommerce_dw.dim_customer;
+ANALYZE ecommerce_dw.dim_product;
+ANALYZE ecommerce_dw.dim_seller;
+ANALYZE ecommerce_dw.dim_payment;
+ANALYZE ecommerce_dw.dim_date;
 
 -- ----------------------------------------------------------------------------
 -- PASO 3 · FACT_SALES
