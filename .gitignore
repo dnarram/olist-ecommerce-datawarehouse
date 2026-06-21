@@ -1,0 +1,14 @@
+# === Datos: NO subir los CSV de Olist (>100 MB, exceden el límite de GitHub) ===
+data/
+*.csv
+
+# === Sistema operativo ===
+.DS_Store
+Thumbs.db
+
+# === Editor ===
+.vscode/
+
+# === Temporales ===
+*.log
+*.tmp
